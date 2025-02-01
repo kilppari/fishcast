@@ -31,12 +31,18 @@ Custom location and timeframe:
 ```bash
 python fishcast.py --location Helsinki --hours 24
 ```
+Visualize the hourly forecast in ASCII chart:
+```bash
+python fishcast.py --visualize
+```
 ### Arguments
 - `--location`, `-l`: Location in Finland (default: Oulu)
 - `--hours`, `-hr`: Number of forecast hours (default: 48)
 - `--timezone`, `-tz`: Timezone (default: Europe/Helsinki)
+- `--visualize`, `-v`: Visualize the hourly forecast in ASCII chart (default: False)
 
 ## Output
 The script provides:
+- Previous and next full moon and new moon dates
 - Hourly fishing index forecast
 - Top 5 best fishing times for the specified period

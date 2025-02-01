@@ -269,6 +269,59 @@ def get_forecast(
         print(f"Error fetching forecast data: {e}")
         return None
 
+
+def print_ascii_chart(fishing_index_forecast):
+    """
+    Create a simple ASCII chart showing fishing index per hour in horizontal format.
+    Each row represents one hour, length represents the scaled index value.
+    
+    Args:
+        fishing_index_forecast: List of ForecastData objects
+    """
+    if not fishing_index_forecast:
+        return
+
+    MAX_WIDTH = 60  # Maximum width for the bars
+    
+    # Get max value for scaling
+    max_index = 100
+
+    print("")
+    print("Date/Time        │ Fishing Index")
+    print("─────────────────┼" + "─" * MAX_WIDTH)
+    
+    # Draw each hour's bar
+    for data in fishing_index_forecast:
+        # Scale the bar length to MAX_WIDTH
+        bar_length = int((data.fishing_index / max_index) * MAX_WIDTH)
+        time_label = data.time.strftime("%a %b-%d %H:%M")
+        label = f"{time_label:16} │"
+        bar = "█" * bar_length
+        print(f"{label}{bar}")
+    
+    # Add scale at the bottom
+    print("─────────────────┼" + "─" * MAX_WIDTH)
+    
+    # Create scale with marks at 0%, 20%, 40%, 60%, 80% and 100% of max width
+    scale = "0".ljust(12)
+    scale += str(int(max_index * 0.2)).ljust(12)
+    scale += str(int(max_index * 0.4)).ljust(12)
+
+    scale += str(int(max_index * 0.6)).ljust(12)
+    scale += str(int(max_index * 0.8)).ljust(12)
+    scale += str(int(max_index))
+    print(" " * 17 + scale)
+
+    # Add tick marks at 20% intervals
+    ticks = ""
+    for i in range(MAX_WIDTH + 1):
+        if i == 0 or i == MAX_WIDTH // 5 or i == MAX_WIDTH * 2 // 5 or \
+           i == MAX_WIDTH * 3 // 5 or i == MAX_WIDTH * 4 // 5 or i == MAX_WIDTH:
+            ticks += "┴"
+        else:
+            ticks += "─"
+    print(" " * 17 + ticks)
+
 # Run script
 if __name__ == "__main__":
     global ARGPARSER
@@ -283,7 +336,10 @@ if __name__ == "__main__":
                        type=int,
                        default=48,
                        help='Forecast hours (default: 48)')
-    
+    parser.add_argument('--visualize', '-v',
+                       action='store_true',
+                       help='Visualize the forecast (default: False)')
+
     global ARGS
     ARGS = parser.parse_args()
     
@@ -292,6 +348,15 @@ if __name__ == "__main__":
                                     hours=ARGS.hours)
     fishing_index_forecast = []
     if forecast_data_list:
+        print("\nMoon phases:")
+        print("-" * 84)
+        # Print out dates of past and future moon phases (Full moon and new moon)
+        moon_phases = calculate_moon_phase_dates(datetime.now(timezone.utc))
+        print(f"Previous full moon:\t {moon_phases[0].strftime('%Y-%m-%d %H:%M')}\n"
+              f"Next full moon:\t\t {moon_phases[1].strftime('%Y-%m-%d %H:%M')}\n"
+              f"Previous new moon:\t {moon_phases[2].strftime('%Y-%m-%d %H:%M')}\n"
+              f"Next new moon:\t\t {moon_phases[3].strftime('%Y-%m-%d %H:%M')}")
+    
         print(f"\nFishing forecast for {ARGS.location} for next {ARGS.hours} hours:")
         print("-" * 84)
         for i, data in enumerate(forecast_data_list):
@@ -312,17 +377,11 @@ if __name__ == "__main__":
                 f"Pressure: {curr_data.pressure:6.1f} hPa ({curr_data.pressure_diff:+.1f}), "
                 f"Wind: {curr_data.winddirection:5.1f}° ({curr_data.windspeed:.1f} m/s)")
 
-        print("\nMoon phases:")
-        print("-" * 84)
-        # Print out dates of past and future moon phases (Full moon and new moon)
-        moon_phases = calculate_moon_phase_dates(datetime.now(timezone.utc))
-        print(f"Previous full moon:\t {moon_phases[0].strftime('%Y-%m-%d %H:%M')}\n"
-              f"Next full moon:\t\t {moon_phases[1].strftime('%Y-%m-%d %H:%M')}\n"
-              f"Previous new moon:\t {moon_phases[2].strftime('%Y-%m-%d %H:%M')}\n"
-              f"Next new moon:\t\t {moon_phases[3].strftime('%Y-%m-%d %H:%M')}")
-
-    # Print top 5 best fishing times
     if fishing_index_forecast:
+        if ARGS.visualize:
+            print_ascii_chart(fishing_index_forecast)
+
+        # Print top 5 best fishing times
         print(f"\nTop 5 best fishing hours in {ARGS.location} in next {ARGS.hours} hours:")
         print("-" * 84)
         
@@ -344,3 +403,5 @@ if __name__ == "__main__":
                 f"Wind: {data.winddirection:.1f}° ({data.windspeed:.1f} m/s)"
             )
         print("")
+
+
