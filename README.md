@@ -109,3 +109,34 @@ Top 5 best fishing hours in Oulu in next 10 hours:
 2025-02-02 08:00 - Index:  58 - Pressure: 1027.7 hPa (+0.8), Wind:  49.0° (5.3 m/s) Sealevel: -1.4 cm (+3.0)
 2025-02-02 09:00 - Index:  48 - Pressure: 1028.3 hPa (+0.6), Wind:  51.0° (6.1 m/s) Sealevel: -3.4 cm (-2.0)
 ```
+
+## License
+This project is licensed under the MIT License - see below or the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 Pekka Mäkinen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Data Sources
+- Weather data is provided by the [Finnish Meteorological Institute](https://en.ilmatieteenlaitos.fi/open-data) under [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+- The fishing index algorithm is based on the book "Kalastuksen taito: olosuhteet, vieheet, kohteet" by Tom Berg (ISBN: 978-952-266-800-4).
