@@ -47,6 +47,7 @@ class ForecastData:
     pressure_diff: float
     windspeed: float
     winddirection: float
+    temperature: float
     sealevel: float
     sealevel_diff: float
     fishing_index: float
@@ -262,6 +263,7 @@ def get_forecast(
             - pressure_diff: float, difference in pressure between current and previous measurement
             - windspeed: float, wind speed in m/s
             - winddirection: float, wind direction in degrees (0-360)
+            - temperature: float, temperature in °C
             - sealevel: float, sea level in cm
             - sealevel_diff: float, difference in sea level between current and previous measurement
             - fishing_index: float, fishing index
@@ -279,7 +281,7 @@ def get_forecast(
     # URL to get forecast data for surface measurements
     url_surface = (f"http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0"
         f"&request=getFeature&storedquery_id=fmi::forecast::harmonie::surface::point::timevaluepair"
-        f"&place={place}&parameters=WindDirection,WindSpeedMS,Pressure"
+        f"&place={place}&parameters=WindDirection,WindSpeedMS,Pressure,Temperature"
         f"&starttime={start_time.strftime('%Y-%m-%dT%H:%M:%S')}Z"
         f"&endtime={end_time.strftime('%Y-%m-%dT%H:%M:%S')}Z")
     
@@ -300,8 +302,9 @@ def get_forecast(
         points_pressure = get_measurement_points(root_surface, 'Pressure')
         points_windspeed = get_measurement_points(root_surface, 'WindSpeedMS')
         points_winddirection = get_measurement_points(root_surface, 'WindDirection')
+        points_temperature = get_measurement_points(root_surface, 'Temperature')
 
-        assert len(points_pressure) == len(points_windspeed) == len(points_winddirection)
+        assert len(points_pressure) == len(points_windspeed) == len(points_winddirection) == len(points_temperature)
 
         # Process pressure data and initialize forecast entries
         forecast_data = [
@@ -312,12 +315,13 @@ def get_forecast(
                 'pressure_diff': 0.0, # To be calculated later  
                 'windspeed': float(point_windspeed.find('.//wml2:value', namespace).text),
                 'winddirection': float(point_winddirection.find('.//wml2:value', namespace).text),
+                'temperature': float(point_temperature.find('.//wml2:value', namespace).text),
                 'sealevel': 0.0, # To be calculated later
                 'sealevel_diff': 0.0, # To be calculated later
                 'fishing_index': 0.0, # To be calculated later
             }
-            for point_pressure, point_windspeed, point_winddirection in
-              zip(points_pressure, points_windspeed, points_winddirection)
+            for point_pressure, point_windspeed, point_winddirection, point_temperature in
+              zip(points_pressure, points_windspeed, points_winddirection, points_temperature)
         ]
 
         # Get sealevel data if requested
@@ -358,7 +362,7 @@ def print_ascii_chart(fishing_index_forecast):
     if not fishing_index_forecast:
         return
 
-    MAX_WIDTH = 80  # Maximum width for the bars
+    MAX_WIDTH = 70  # Maximum width for the bars
     
     # Get max value for scaling
     max_index = 100
@@ -399,13 +403,14 @@ def print_ascii_chart(fishing_index_forecast):
     print(" " * 17 + ticks)
 
 def forecastdata_to_str(data: ForecastData) -> str:
-    str_sealevel = f"{data.sealevel:.1f} cm ({data.sealevel_diff:+.1f})" if ARGS.sealevel != None else "N/A"
+    str_sealevel = f"{data.sealevel:5.1f} cm ({data.sealevel_diff:+.1f})" if ARGS.sealevel != None else "N/A"
     
-    return (f"{data.time.strftime('%Y-%m-%d %H:%M')} - "
-            f"Index: {int(data.fishing_index):>3} - "
-            f"Pressure: {data.pressure:6.1f} hPa ({data.pressure_diff:+.1f}), "
-            f"Wind: {data.winddirection:5.1f}° ({data.windspeed:.1f} m/s) "
-            f"Sealevel: {str_sealevel}")
+    return (f"{data.time.strftime('%a %b-%d %H:%M')}, "
+            f"I: {int(data.fishing_index):>3}, "
+            f"P: {data.pressure:6.1f} hPa ({data.pressure_diff:+.1f}), "
+            f"W: {data.winddirection:5.1f}° ({data.windspeed:.1f} m/s), "
+            f"T: {data.temperature:5.1f}°C, "
+            f"S: {str_sealevel}")
 
 # Run script
 if __name__ == "__main__":
@@ -487,7 +492,4 @@ if __name__ == "__main__":
         
         for data in best_times:
             print(forecastdata_to_str(data))
-        print("")
-
-
-
+        print("\nI = Fishing index, P = Atmospheric pressure, W = Wind direction, T = Temperature, S = Sealevel")

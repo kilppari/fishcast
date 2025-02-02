@@ -1,19 +1,20 @@
 # Fishcaster
 Forecaster for best fishing hours based on weather forecast and moon phases.
+This script works for Finnish locations only and is not suitable for other regions.
 
-The algorithm used in this script is described in the book **Kalastuksen taito: 
-olosuhteet, vieheet, kohteet** by **Tom Berg**. 
+The algorithm used in this script to calculate the fishing index is described
+in the book **Kalastuksen taito: Olosuhteet, vieheet, kohteet** by **Tom Berg**. 
 (ISBN: 978-952-266-800-4)
 
-This script works for Finnish locations only and is not suitable for other regions.
+It is encouraged to buy the book to be able to interpret the results correctly.
 
 ## Description
 Calculates optimal fishing times using weather forecasts from the Finnish Meteorological Institute (FMI) and moon phase data. 
 Considered factors are:
-- Air pressure changes
+- Atmospheric pressure
 - Wind direction
-- Moon phases
-- Sea level changes (optional)
+- Moon phase
+- Sea level (optional)
 
 ## Prerequisites
 - Python 3.x
@@ -34,7 +35,7 @@ python fishcast.py -l Helsinki -hr 24
 - `--hours`, `-hr`: Number of forecast hours (default: 48)
 - `--timezone`, `-tz`: Timezone (default: Europe/Helsinki)
 - `--visualize`, `-v`: Visualize the hourly forecast in ASCII chart (default: False)
-- `--sealevel`, `-sl`: Location for sealevel measurement (default: None). Do not use if not fishing in sea.
+- `--sealevel`, `-sl`: Location for sealevel measurement (default: None). Use only for sea fishing.
 
 ```bash
 python fishcast.py --help
@@ -52,62 +53,67 @@ options:
                         Forecast hours (default: 48)
   --visualize, -v       Visualize the forecast (default: OFF)
   --sealevel SEALEVEL, -sl SEALEVEL
-                        Location for sealevel measurement (default: OFF) Possible values: Pietarsaari, Kemi, Porvoo, Vaasa, Turku, Rauma, Raahe, Oulu, Mantyluoto,      
-                        Kaskinen, Helsinki, Hanko, Hamina, Degerby
+                        Location for sealevel measurement (default: OFF) 
+                        Possible values: Pietarsaari, Kemi, Porvoo, Vaasa,
+                        Turku, Rauma, Raahe, Oulu, Mantyluoto, Kaskinen,
+                        Helsinki, Hanko, Hamina, Degerby
 ```	
+
 
 ## Output
 The script provides:
 - Previous and next full moon and new moon dates
-- Hourly fishing index forecast (with ASCII chart if using --visualize or -v)
-- Top 5 best fishing hours for the specified period
-
+- Hourly fishing index and weather forecast
+- Top 5 best fishing hours for the specified period (sorted by earliest time)
 
 Example:
 ```bash
-python fishcast.py -l Oulu -hr 10 -sl Oulu -v 
+python fishcast.py -l Helsinki -hr 10 -v -sl Helsinki
 
 Moon phases:
+
 -------------
 Previous full moon:      2025-01-14 00:26
 Previous new moon:       2025-01-29 14:35
 Next full moon:          2025-02-12 15:53
 Next new moon:           2025-02-28 02:44
 
-Fishing forecast for Oulu for next 10 hours:
----------------------------------------------
-2025-02-02 02:00 - Index:  24 - Pressure: 1024.9 hPa (+0.4), Wind:  38.0° (4.5 m/s) Sealevel: 4.6 cm (+0.0)
-2025-02-02 03:00 - Index:  48 - Pressure: 1025.5 hPa (+0.6), Wind:  41.0° (4.5 m/s) Sealevel: 3.6 cm (-1.0)
-2025-02-02 04:00 - Index:   4 - Pressure: 1026.0 hPa (+0.5), Wind:  40.0° (4.3 m/s) Sealevel: -2.4 cm (-6.0)
-2025-02-02 05:00 - Index: -10 - Pressure: 1026.0 hPa (+0.0), Wind:  33.0° (5.0 m/s) Sealevel: -6.4 cm (-4.0)
-2025-02-02 06:00 - Index:   0 - Pressure: 1026.3 hPa (+0.3), Wind:  42.0° (5.1 m/s) Sealevel: -6.4 cm (+0.0)
-2025-02-02 07:00 - Index:  48 - Pressure: 1026.9 hPa (+0.6), Wind:  46.0° (5.2 m/s) Sealevel: -4.4 cm (+2.0)
-2025-02-02 08:00 - Index:  58 - Pressure: 1027.7 hPa (+0.8), Wind:  49.0° (5.3 m/s) Sealevel: -1.4 cm (+3.0)
-2025-02-02 09:00 - Index:  48 - Pressure: 1028.3 hPa (+0.6), Wind:  51.0° (6.1 m/s) Sealevel: -3.4 cm (-2.0)
-2025-02-02 10:00 - Index: -10 - Pressure: 1028.5 hPa (+0.2), Wind:  51.0° (5.9 m/s) Sealevel: -8.4 cm (-5.0)
+Fishing forecast for Helsinki for next 10 hours:
+-------------------------------------------------
+Sun Feb-02 19:00, I:  48, P: 1017.9 hPa (+0.7), W:   1.0° (6.2 m/s), T:  -0.5°C, S:  34.4 cm (-2.0)
+Sun Feb-02 20:00, I:   0, P: 1018.1 hPa (+0.2), W:   3.0° (6.2 m/s), T:  -0.7°C, S:  34.4 cm (+0.0)
+Sun Feb-02 21:00, I:   0, P: 1017.9 hPa (-0.2), W:   7.0° (6.5 m/s), T:  -0.9°C, S:  33.4 cm (-1.0)
+Sun Feb-02 22:00, I:   0, P: 1017.9 hPa (+0.0), W:  13.0° (6.5 m/s), T:  -1.2°C, S:  34.4 cm (+1.0)
+Sun Feb-02 23:00, I:  24, P: 1018.3 hPa (+0.4), W:  15.0° (6.0 m/s), T:  -1.4°C, S:  33.4 cm (-1.0)
+Mon Feb-03 00:00, I:  24, P: 1018.8 hPa (+0.5), W:   9.0° (5.8 m/s), T:  -1.6°C, S:  33.4 cm (+0.0)
+Mon Feb-03 01:00, I:  24, P: 1019.2 hPa (+0.4), W:   9.0° (5.9 m/s), T:  -1.9°C, S:  32.4 cm (-1.0)
+Mon Feb-03 02:00, I:   0, P: 1019.4 hPa (+0.2), W:   9.0° (5.5 m/s), T:  -2.1°C, S:  32.4 cm (+0.0)
+Mon Feb-03 03:00, I:  24, P: 1019.8 hPa (+0.4), W:  11.0° (5.0 m/s), T:  -2.4°C, S:  33.4 cm (+1.0)
 
 Date/Time        │Fishing Index
-─────────────────┼────────────────────────────────────────────────────────────────────────────────
-Sun Feb-02 02:00 │███████████████████
-Sun Feb-02 03:00 │██████████████████████████████████████
-Sun Feb-02 04:00 │███
-Sun Feb-02 05:00 │
-Sun Feb-02 06:00 │
-Sun Feb-02 07:00 │██████████████████████████████████████
-Sun Feb-02 08:00 │██████████████████████████████████████████████
-Sun Feb-02 09:00 │██████████████████████████████████████
-Sun Feb-02 10:00 │
-─────────────────┼────────────────────────────────────────────────────────────────────────────────
-                 0               20              40              60              80              100
-                 ┴───────────────┴───────────────┴───────────────┴───────────────┴───────────────┴
+─────────────────┼──────────────────────────────────────────────────────────────────────
+Sun Feb-02 19:00 │█████████████████████████████████
+Sun Feb-02 20:00 │
+Sun Feb-02 21:00 │
+Sun Feb-02 22:00 │
+Sun Feb-02 23:00 │████████████████
+Mon Feb-03 00:00 │████████████████
+Mon Feb-03 01:00 │████████████████
+Mon Feb-03 02:00 │
+Mon Feb-03 03:00 │████████████████
+─────────────────┼──────────────────────────────────────────────────────────────────────
+                 0             20            40            60            80            100
+                 ┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┴
 
-Top 5 best fishing hours in Oulu in next 10 hours:
----------------------------------------------------
-2025-02-02 02:00 - Index:  24 - Pressure: 1024.9 hPa (+0.4), Wind:  38.0° (4.5 m/s) Sealevel: 4.6 cm (+0.0)
-2025-02-02 03:00 - Index:  48 - Pressure: 1025.5 hPa (+0.6), Wind:  41.0° (4.5 m/s) Sealevel: 3.6 cm (-1.0)
-2025-02-02 07:00 - Index:  48 - Pressure: 1026.9 hPa (+0.6), Wind:  46.0° (5.2 m/s) Sealevel: -4.4 cm (+2.0)
-2025-02-02 08:00 - Index:  58 - Pressure: 1027.7 hPa (+0.8), Wind:  49.0° (5.3 m/s) Sealevel: -1.4 cm (+3.0)
-2025-02-02 09:00 - Index:  48 - Pressure: 1028.3 hPa (+0.6), Wind:  51.0° (6.1 m/s) Sealevel: -3.4 cm (-2.0)
+Top 5 best fishing hours in Helsinki in next 10 hours:
+-------------------------------------------------------
+Sun Feb-02 19:00, I:  48, P: 1017.9 hPa (+0.7), W:   1.0° (6.2 m/s), T:  -0.5°C, S:  34.4 cm (-2.0)
+Sun Feb-02 23:00, I:  24, P: 1018.3 hPa (+0.4), W:  15.0° (6.0 m/s), T:  -1.4°C, S:  33.4 cm (-1.0)
+Mon Feb-03 00:00, I:  24, P: 1018.8 hPa (+0.5), W:   9.0° (5.8 m/s), T:  -1.6°C, S:  33.4 cm (+0.0)
+Mon Feb-03 01:00, I:  24, P: 1019.2 hPa (+0.4), W:   9.0° (5.9 m/s), T:  -1.9°C, S:  32.4 cm (-1.0)
+Mon Feb-03 03:00, I:  24, P: 1019.8 hPa (+0.4), W:  11.0° (5.0 m/s), T:  -2.4°C, S:  33.4 cm (+1.0)
+
+I = Fishing index, P = Atmospheric pressure, W = Wind direction, T = Temperature, S = Sealevel
 ```
 
 ## License
