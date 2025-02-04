@@ -102,13 +102,14 @@ def calculate_wind_direction_points(direction: float) -> int:
             return points
     return 0
 
-def calculate_moon_phase_points(reference_time: datetime) -> int:
+def calculate_moon_phase_points(reference_time_utc: datetime) -> int:
     """
     Calculate points based on proximity to full and new moon phases.
     
     Args:
-        reference_time: datetime, reference point for moon calculations
-        
+        reference_time_utc: datetime, reference point for moon calculations,
+        expected to be in UTC timezone
+
     Returns:
         int: Points awarded based on moon phase:
             - 100 points: within 1 day of full/new moon
@@ -116,12 +117,12 @@ def calculate_moon_phase_points(reference_time: datetime) -> int:
             - 30 points: within 3 days of full/new moon
             - 0 points: other times
     """
-    prev_full, next_full, prev_new, next_new = calculate_moon_phase_dates(reference_time)
+    prev_full, next_full, prev_new, next_new = calculate_moon_phase_dates(reference_time_utc)
     
-    days_until_next_full = (next_full - reference_time).total_seconds() / 86400
-    days_until_next_new = (next_new - reference_time).total_seconds() / 86400
-    days_after_prev_full = (reference_time - prev_full).total_seconds() / 86400
-    days_after_prev_new = (reference_time - prev_new).total_seconds() / 86400
+    days_until_next_full = (next_full - reference_time_utc).total_seconds() / 86400
+    days_until_next_new = (next_new - reference_time_utc).total_seconds() / 86400
+    days_after_prev_full = (reference_time_utc - prev_full).total_seconds() / 86400
+    days_after_prev_new = (reference_time_utc - prev_new).total_seconds() / 86400
 
     if days_until_next_full <= 1 or days_until_next_new <= 1:
         return 100
@@ -147,9 +148,9 @@ def calculate_moon_phase_dates(reference_time_utc: datetime) -> tuple[datetime, 
             - previous new moon datetime
             - next new moon datetime
 
-        All returneddatetimes are in timezone given as script argument.
+        All returned datetimes are in UTC timezone.
     """
-    # Setup observer (Use Oulu, Finland coordinates)
+    # Setup observer (Use Oulu, Finland coordinates. Should be correct enough for all of Finland)
     observer = ephem.Observer()
     observer.lat = '65.0124'  # Oulu latitude
     observer.lon = '25.4682'  # Oulu longitude
@@ -160,10 +161,10 @@ def calculate_moon_phase_dates(reference_time_utc: datetime) -> tuple[datetime, 
     next_full = ephem.next_full_moon(observer.date)
     prev_new = ephem.previous_new_moon(observer.date)
     next_new = ephem.next_new_moon(observer.date)
-    
-    # Convert to datetime objects to target timezone
+
+    # Convert to pytz datetime objects
     def localize(ephem_date):
-        return pytz.utc.localize(ephem.Date(ephem_date).datetime()).astimezone(pytz.timezone(ARGS.timezone))
+        return pytz.utc.localize(ephem.Date(ephem_date).datetime())
     
     return (
         localize(prev_full),
@@ -227,10 +228,10 @@ def calculate_fishing_index(current_data: ForecastData, prev_data: ForecastData)
     points['pressure'] = calculate_pressure_points(pressure_diff) * COEFF_PRESSURE_CHANGE
     current_data.pressure_diff = pressure_diff # Store the pressure difference
 
-    if ARGS.sealevel != None:
-        sealevel_diff = current_data.sealevel - prev_data.sealevel
-        points['sealevel'] = calculate_sealevel_points(sealevel_diff)
-        current_data.sealevel_diff = sealevel_diff # Store the sea level difference
+    # Calculate sealevel points (if sealevel is not provided, this will be 0)
+    sealevel_diff = current_data.sealevel - prev_data.sealevel
+    points['sealevel'] = calculate_sealevel_points(sealevel_diff)
+    current_data.sealevel_diff = sealevel_diff # Store the sea level difference
     
     # Calculate wind direction points
     points['wind'] = calculate_wind_direction_points(current_data.winddirection) * COEFF_WIND_DIRECTION
@@ -243,7 +244,8 @@ def get_forecast(
     timezone: str,
     place: str,
     hours: int,
-    start_time: datetime = None
+    start_time: datetime = None,
+    sealevel: str = None
 ) -> list[dict] | None:
 
     """
@@ -254,6 +256,7 @@ def get_forecast(
         place: str, name of the location in Finland
         hours: int, number of hours for forecast
         start_time: datetime, start time for forecast (default: current time - 1h)
+        sealevel: str, name of the location for sealevel measurements (default: None)
 
     Returns:
         list[dict] | None: List of forecast data dictionaries or None if request fails.
@@ -325,14 +328,14 @@ def get_forecast(
         ]
 
         # Get sealevel data if requested
-        if ARGS.sealevel != None:
-            if ARGS.sealevel not in GEOIDS:
-                raise ValueError(f"Invalid sea level measurement location: {ARGS.sealevel}.\nPossible values: {', '.join(GEOIDS.keys())}")
+        if sealevel != None:
+            if sealevel not in GEOIDS:
+                raise ValueError(f"Invalid sea level measurement location: {sealevel}.\nPossible values: {', '.join(GEOIDS.keys())}")
 
             url_sealevel = (f"http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature"
                 f"&storedquery_id=fmi::forecast::sealevel::point::timevaluepair&"
                 f"starttime={start_time.strftime('%Y-%m-%dT%H:%M:%S')}Z"
-                f"&endtime={end_time.strftime('%Y-%m-%dT%H:%M:%S')}Z&geoid={GEOIDS[ARGS.sealevel]}")
+                f"&endtime={end_time.strftime('%Y-%m-%dT%H:%M:%S')}Z&geoid={GEOIDS[sealevel]}")
             response_sealevel = requests.get(url_sealevel)
             response_sealevel.raise_for_status()
             root_sealevel = ET.fromstring(response_sealevel.content)
@@ -402,8 +405,8 @@ def print_ascii_chart(fishing_index_forecast):
             ticks += "─"
     print(" " * 17 + ticks)
 
-def forecastdata_to_str(data: ForecastData) -> str:
-    str_sealevel = f"{data.sealevel:5.1f} cm ({data.sealevel_diff:+.1f})" if ARGS.sealevel != None else "N/A"
+def forecastdata_to_str(data: ForecastData, sealevel: str) -> str:
+    str_sealevel = f"{data.sealevel:5.1f} cm ({data.sealevel_diff:+.1f})" if sealevel != None else "N/A"
     
     return (f"{data.time.strftime('%a %b-%d %H:%M')}, "
             f"I: {int(data.fishing_index):>3}, "
@@ -433,12 +436,12 @@ if __name__ == "__main__":
                         default=None,
                         help=f'Location for sealevel measurement (default: OFF)\nPossible values: {", ".join(GEOIDS.keys())}')
 
-    global ARGS
     ARGS = parser.parse_args()
     
     forecast_data_list = get_forecast(timezone=ARGS.timezone, 
                                     place=ARGS.location, 
-                                    hours=ARGS.hours)
+                                    hours=ARGS.hours,
+                                    sealevel=ARGS.sealevel)
     fishing_index_forecast = []
     if forecast_data_list:
         text = "\nMoon phases:"
@@ -446,11 +449,12 @@ if __name__ == "__main__":
         print("-" * len(text))
         # Print out dates of past and future moon phases (Full moon and new moon)
         moon_phases = calculate_moon_phase_dates(datetime.now(timezone.utc))
+        moon_phases_local = [moon_phase.astimezone(pytz.timezone(ARGS.timezone)) for moon_phase in moon_phases]
 
-        print(f"Previous full moon:\t {moon_phases[0].strftime('%Y-%m-%d %H:%M')}\n"
-              f"Previous new moon:\t {moon_phases[2].strftime('%Y-%m-%d %H:%M')}\n"
-              f"Next full moon:\t\t {moon_phases[1].strftime('%Y-%m-%d %H:%M')}\n"
-              f"Next new moon:\t\t {moon_phases[3].strftime('%Y-%m-%d %H:%M')}")
+        print(f"Previous full moon:\t {moon_phases_local[0].strftime('%Y-%m-%d %H:%M')}\n"
+              f"Previous new moon:\t {moon_phases_local[2].strftime('%Y-%m-%d %H:%M')}\n"
+              f"Next full moon:\t\t {moon_phases_local[1].strftime('%Y-%m-%d %H:%M')}\n"
+              f"Next new moon:\t\t {moon_phases_local[3].strftime('%Y-%m-%d %H:%M')}")
     
         text = f"\nFishing forecast for {ARGS.location} for next {ARGS.hours} hours:" 
         print(text)
@@ -469,7 +473,7 @@ if __name__ == "__main__":
             # Store current data into list
             fishing_index_forecast.append(curr_data)
 
-            print(forecastdata_to_str(curr_data))
+            print(forecastdata_to_str(curr_data, ARGS.sealevel))
 
     if fishing_index_forecast:
         if ARGS.visualize:
@@ -491,5 +495,5 @@ if __name__ == "__main__":
         )
         
         for data in best_times:
-            print(forecastdata_to_str(data))
+            print(forecastdata_to_str(data, ARGS.sealevel))
         print("\nI = Fishing index, P = Atmospheric pressure, W = Wind direction, T = Temperature, S = Sealevel")

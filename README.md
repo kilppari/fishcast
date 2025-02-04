@@ -71,7 +71,6 @@ Example:
 python fishcast.py -l Helsinki -hr 10 -v -sl Helsinki
 
 Moon phases:
-
 -------------
 Previous full moon:      2025-01-14 00:26
 Previous new moon:       2025-01-29 14:35
