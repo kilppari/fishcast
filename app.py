@@ -187,31 +187,34 @@ def get_forecast_data(place, include_sealevel=False):
 app.layout = html.Div([
     dcc.Store(id='data-fetched', data=False),
     
-    # Logo container
+    # Title container with perch image
     html.Div([
-        html.Div([  # Added wrapper div for vignette effect
-            html.Img(
-                src='assets/logo.jpg',
-                style={
-                    'height': 'auto',
-                    'width': '300px',
-                    'marginBottom': '0px',
-                    'position': 'relative',  # Required for mask to work
-                    'zIndex': '1'  # Ensure image is below the vignette
-                }
-            )
-        ], style={
-            'position': 'relative',
-            'display': 'inline-block',  # Contains the image
-            'maskImage': 'radial-gradient(ellipse at center, black 40%, transparent 95%)',
-            'WebkitMaskImage': 'radial-gradient(ellipse at center, black 40%, transparent 95%)',  # For Safari support
-        })
+        # Perch image
+        html.Img(
+            src='assets/perch_small.png',
+            style={
+                'height': 'auto',
+                'width': '300px',
+                'marginBottom': '0px'
+            }
+        ),
+        # Fishcast title
+        html.H1(
+            'Fishcast',
+            style={
+                'fontFamily': FONT_FAMILY,
+                'fontSize': '48px',
+                'fontWeight': '600',
+                'color': COLORS['text'],
+                'margin': '5px 0',
+                'letterSpacing': '2px',
+                'textAlign': 'center'
+            }
+        )
     ], style={
         'textAlign': 'center',
         'marginBottom': '5px'
     }),
-    
-    #html.H1('Fishing Index Forecast', style=HEADER_STYLES),
     
     # Form container
     html.Div([
