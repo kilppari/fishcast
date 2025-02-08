@@ -1,0 +1,14 @@
+{
+    "name": "Fishcast",
+    "short_name": "Fishcast",
+    "icons": [
+        {
+            "src": "icon_small.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#1a1a1a",
+    "background_color": "#1a1a1a",
+    "display": "standalone"
+} 

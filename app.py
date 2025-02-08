@@ -8,14 +8,15 @@ from fishcast import get_forecast, calculate_fishing_index, ForecastData
 # Initialize the Dash app
 app = Dash(__name__)
 
-# Add custom CSS to remove default margins
+# Add custom CSS and basic icon information
 app.index_string = '''
 <!DOCTYPE html>
 <html>
     <head>
         {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
+        <title>Fishcast</title>
+        <link rel="icon" type="image/png" href="assets/icon_small.png">
+        <link rel="manifest" href="assets/site.webmanifest">
         {%css%}
         <style>
             body {
