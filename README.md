@@ -1,5 +1,5 @@
-# Fishcaster
-Forecaster for best fishing hours based on weather forecast and moon phases.
+# Fishcast
+Forecasts the activity of fish based on weather forecast and moon phases.
 This script works for Finnish locations only and is not suitable for other regions.
 
 The algorithm used in this script to calculate the fishing index is described
@@ -7,9 +7,12 @@ in the book **Kalastuksen taito: Olosuhteet, vieheet, kohteet** by **Tom Berg**.
 (ISBN: 978-952-266-800-4)
 
 It is encouraged to buy the book to be able to interpret the results correctly.
+E.g. depending on activity index, different fishing techniques and baits are
+recommended.
 
 ## Description
-Calculates optimal fishing times using weather forecasts from the Finnish Meteorological Institute (FMI) and moon phase data. 
+Calculates optimal fishing times using weather forecasts from the Finnish Meteorological
+Institute (FMI) and moon phase data. 
 Considered factors are:
 - Atmospheric pressure
 - Wind direction

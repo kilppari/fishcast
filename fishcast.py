@@ -38,8 +38,6 @@ GEOIDS = {
     "Degerby": "660415"  # Föglö Degerby
 }
 
-#http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::sealevel::point::timevaluepair&starttime=2025-02-01T23:00:00Z&endtime=2025-02-02T09:00:00Z&geoid=643492
-
 @dataclass
 class ForecastData:
     time: datetime
