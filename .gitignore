@@ -1,0 +1,6 @@
+# Design files
+*.psd
+icon.psd
+
+# Python
+*.py[cod]

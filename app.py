@@ -188,33 +188,29 @@ def get_forecast_data(place, include_sealevel=False):
 app.layout = html.Div([
     dcc.Store(id='data-fetched', data=False),
     
-    # Title container with perch image
+    # Logo container with vignette effect
     html.Div([
-        # Perch image
-        html.Img(
-            src='assets/perch_small.png',
-            style={
-                'height': 'auto',
-                'width': '300px',
-                'marginBottom': '0px'
-            }
-        ),
-        # Fishcast title
-        html.H1(
-            'Fishcast',
-            style={
-                'fontFamily': FONT_FAMILY,
-                'fontSize': '48px',
-                'fontWeight': '600',
-                'color': COLORS['text'],
-                'margin': '5px 0',
-                'letterSpacing': '2px',
-                'textAlign': 'center'
-            }
-        )
+        html.Div([
+            html.Img(
+                src='assets/logo.jpg',
+                style={
+                    'height': 'auto',
+                    'width': '300px',
+                    'marginBottom': '0px',
+                    'position': 'relative',
+                    'zIndex': '1'
+                }
+            )
+        ], style={
+            'position': 'relative',
+            'display': 'inline-block',
+            'maskImage': 'radial-gradient(ellipse at center, black 40%, transparent 70%)',
+            'WebkitMaskImage': 'radial-gradient(ellipse at center, black 40%, transparent 70%)',
+        })
     ], style={
         'textAlign': 'center',
-        'marginBottom': '5px'
+        'marginBottom': '20px',
+        'marginTop': '20px'
     }),
     
     # Form container
